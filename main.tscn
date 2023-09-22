@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://c2edbd7dmbikp"]
+[gd_scene load_steps=6 format=3 uid="uid://c2edbd7dmbikp"]
 
 [ext_resource type="PackedScene" uid="uid://bladlqeo8q5y8" path="res://player.tscn" id="1_pem0y"]
+[ext_resource type="PackedScene" uid="uid://dcd7pwufva7xc" path="res://hud.tscn" id="3_gpwa5"]
 [ext_resource type="PackedScene" uid="uid://cljcq727tpbre" path="res://mob.tscn" id="3_xsc21"]
 
 [sub_resource type="GDScript" id="GDScript_wnimb"]
@@ -51,8 +52,6 @@ func _on_mob_timer_timeout():
 	# Spawn the mob by adding it to the Main scene.
 	add_child(mob)
 	
-func _ready():
-	new_game()
 "
 
 [sub_resource type="Curve2D" id="Curve2D_eh6ep"]
@@ -85,6 +84,9 @@ curve = SubResource("Curve2D_eh6ep")
 
 [node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
 
+[node name="HUD" parent="." instance=ExtResource("3_gpwa5")]
+
 [connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
 [connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
 [connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
+[connection signal="start_game" from="HUD" to="." method="new_game"]
