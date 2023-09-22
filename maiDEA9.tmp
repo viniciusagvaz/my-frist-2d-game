@@ -10,16 +10,10 @@ script/source = "extends Node
 @export var mob_scene: PackedScene
 var score
 
-func game_over():
-	$ScoreTimer.stop()
-	$MobTimer.stop()
-
 func new_game():
 	score = 0
 	$Player.start($StartPosition.position)
 	$StartTimer.start()
-	$HUD.update_score(score)
-	$HUD.show_message(\"Get Ready\")
 	
 func _on_score_timer_timeout():
 	score += 1
@@ -54,6 +48,22 @@ func _on_mob_timer_timeout():
 	add_child(mob)
 	
 	$HUD.update_score(score)
+	
+func show_message(text):
+	$Message.text = text
+	$Message.show()
+	$MessageTimer.start()
+
+func show_game_over():
+	show_message(\"Game Over\")
+	# Wait until the MessageTimer has counted down.
+	await $MessageTimer.timeout
+
+	$Message.text = \"Dodge the\\nCreeps!\"
+	$Message.show()
+	# Make a one-shot timer and wait for it to finish.
+	await get_tree().create_timer(1.0).timeout
+	$StartButton.show()
 "
 
 [sub_resource type="Curve2D" id="Curve2D_eh6ep"]
@@ -88,7 +98,6 @@ curve = SubResource("Curve2D_eh6ep")
 
 [node name="HUD" parent="." instance=ExtResource("3_gpwa5")]
 
-[connection signal="hit" from="Player" to="." method="game_over"]
 [connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
 [connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
 [connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
