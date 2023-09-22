@@ -57,7 +57,7 @@ script = ExtResource("1_qlv1g")
 position = Vector2(230, 233)
 scale = Vector2(0.75, 0.75)
 sprite_frames = SubResource("SpriteFrames_y7js7")
-animation = &"swim"
+animation = &"walk"
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 

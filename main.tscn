@@ -1,16 +1,69 @@
-[gd_scene load_steps=4 format=3 uid="uid://ddoh5altjf6n5"]
+[gd_scene load_steps=5 format=3 uid="uid://c2edbd7dmbikp"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_b3dyx"]
 [ext_resource type="PackedScene" uid="uid://bladlqeo8q5y8" path="res://player.tscn" id="1_pem0y"]
+[ext_resource type="PackedScene" uid="uid://cljcq727tpbre" path="res://mob.tscn" id="3_xsc21"]
 
-[sub_resource type="Curve2D" id="Curve2D_rai62"]
+[sub_resource type="GDScript" id="GDScript_wnimb"]
+script/source = "extends Node
+
+@export var mob_scene: PackedScene
+
+var score
+
+func game_over():
+	$ScoreTimer.stop()
+	$MobTimer.stop()
+
+func new_game():
+	score = 0
+	$Player.start($StartPosition.position)
+	$StartTimer.start()
+	
+func _on_score_timer_timeout():
+	score += 1
+
+func _on_start_timer_timeout():
+	$MobTimer.start()
+	$ScoreTimer.start()
+	
+func _on_mob_timer_timeout():
+	# Create a new instance of the Mob scene.
+	var mob = mob_scene.instantiate()
+
+	# Choose a random location on Path2D.
+	var mob_spawn_location = get_node(\"MobPath/MobSpawnLocation\")
+	mob_spawn_location.progress_ratio = randf()
+
+	# Set the mob's direction perpendicular to the path direction.
+	var direction = mob_spawn_location.rotation + PI / 2
+
+	# Set the mob's position to a random location.
+	mob.position = mob_spawn_location.position
+
+	# Add some randomness to the direction.
+	direction += randf_range(-PI / 4, PI / 4)
+	mob.rotation = direction
+
+	# Choose the velocity for the mob.
+	var velocity = Vector2(randf_range(150.0, 250.0), 0.0)
+	mob.linear_velocity = velocity.rotated(direction)
+
+	# Spawn the mob by adding it to the Main scene.
+	add_child(mob)
+	
+func _ready():
+	new_game()
+"
+
+[sub_resource type="Curve2D" id="Curve2D_eh6ep"]
 _data = {
-"points": PackedVector2Array(0, 0, 0, 0, 476, -1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 477, 714, 0, 0, 0, 0, 2, 709, 0, 0, 0, 0, 476, -1)
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 480, 0, 0, 0, 0, 0, 480, 720, 0, 0, 0, 0, 0, 720, 0, 0, 0, 0, 0, 0)
 }
 point_count = 5
 
 [node name="Main" type="Node"]
-script = ExtResource("1_b3dyx")
+script = SubResource("GDScript_wnimb")
+mob_scene = ExtResource("3_xsc21")
 
 [node name="Player" parent="." instance=ExtResource("1_pem0y")]
 
@@ -27,10 +80,11 @@ one_shot = true
 position = Vector2(240, 450)
 
 [node name="MobPath" type="Path2D" parent="."]
-curve = SubResource("Curve2D_rai62")
+position = Vector2(1, 1)
+curve = SubResource("Curve2D_eh6ep")
 
 [node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
-position = Vector2(476, -1)
-rotation = 3.13948
 
-[connection signal="hit" from="Player" to="." method="_on_player_hit"]
+[connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
+[connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
+[connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
