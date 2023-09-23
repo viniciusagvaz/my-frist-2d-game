@@ -1,7 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://c2edbd7dmbikp"]
+[gd_scene load_steps=6 format=3 uid="uid://c2edbd7dmbikp"]
 
 [ext_resource type="PackedScene" uid="uid://bladlqeo8q5y8" path="res://player.tscn" id="1_pem0y"]
-[ext_resource type="Texture2D" uid="uid://chxok3ayer5uv" path="res://art/background.jpg" id="2_gvceb"]
 [ext_resource type="PackedScene" uid="uid://dcd7pwufva7xc" path="res://hud.tscn" id="3_gpwa5"]
 [ext_resource type="PackedScene" uid="uid://cljcq727tpbre" path="res://mob.tscn" id="3_xsc21"]
 
@@ -14,18 +13,21 @@ var score
 func game_over():
 	$ScoreTimer.stop()
 	$MobTimer.stop()
-	$HUD.show_game_over()
 
 
 func new_game():
 	score = 0
-	get_tree().call_group(\"mobs\", \"queue_free\")
-	
 	$Player.start($StartPosition.position)
 	$StartTimer.start()
 	$HUD.update_score(score)
 	$HUD.show_message(\"Get Ready\")
+	
+func _on_score_timer_timeout():
+	score += 1
 
+func _on_start_timer_timeout():
+	$MobTimer.start()
+	$ScoreTimer.start()
 	
 func _on_mob_timer_timeout():
 	# Create a new instance of the Mob scene.
@@ -53,15 +55,9 @@ func _on_mob_timer_timeout():
 	add_child(mob)
 	
 	$HUD.update_score(score)
-
-func _on_score_timer_timeout():
-	score += 1
-	$HUD.update_score(score)
-
-
-func _on_start_timer_timeout():
-	$MobTimer.start()
-	$ScoreTimer.start()
+	
+func _ready():
+	new_game()
 "
 
 [sub_resource type="Curve2D" id="Curve2D_eh6ep"]
@@ -74,15 +70,7 @@ point_count = 5
 script = SubResource("GDScript_wnimb")
 mob_scene = ExtResource("3_xsc21")
 
-[node name="TextureRect" type="TextureRect" parent="."]
-clip_contents = true
-custom_minimum_size = Vector2(240, 720)
-offset_right = 40.0
-offset_bottom = 40.0
-texture = ExtResource("2_gvceb")
-
 [node name="Player" parent="." instance=ExtResource("1_pem0y")]
-position = Vector2(112, 136)
 
 [node name="MobTimer" type="Timer" parent="."]
 wait_time = 0.5
@@ -97,6 +85,7 @@ one_shot = true
 position = Vector2(240, 450)
 
 [node name="MobPath" type="Path2D" parent="."]
+position = Vector2(1, 1)
 curve = SubResource("Curve2D_eh6ep")
 
 [node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
